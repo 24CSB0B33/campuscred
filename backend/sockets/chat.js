@@ -36,7 +36,7 @@ function initChat(io) {
     });
 
     socket.on('disconnect', () => {
-      // Socket.io already leaves rooms when someone disconnects
+      // Socket.io leaves room when someone disconnects
     });
   });
 }
