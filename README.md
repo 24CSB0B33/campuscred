@@ -4,6 +4,7 @@ A platform where users trade skills using **credits** instead of money.
 Learn guitar by teaching Python. No cash exchanges — only knowledge.
 
 ## Architecture 
+```
 campuscred/
 ├── backend/
 │   ├── config/          → db.js (PostgreSQL pool), firebase.js (Admin SDK init)
@@ -31,7 +32,7 @@ campuscred/
 3. **Credit economy**: booking a session immediately escrows credits from the learner (`sessions.js`). Credits only release to the teacher when the session is marked `completed`; cancellations auto-refund the learner. All movement is logged in `transactions` for a full audit trail.
 
 4. **Real-time chat**: Socket.io rooms are scoped per `sessionId`. Messages are persisted to Postgres so chat history survives reconnects.
-
+```
 
 ## Tech Stack
 - **Frontend**: React.js, Redux Toolkit, Tailwind CSS, Socket.io-client
