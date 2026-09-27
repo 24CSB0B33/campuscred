@@ -3,13 +3,13 @@ const router = express.Router();
 const pool = require('../config/db');
 const auth = require('../middleware/authMiddleware');
 
-// GET all skills (for dropdowns/search)
+// List every skill (used in search and dropdowns)
 router.get('/', async (req, res) => {
   const result = await pool.query('SELECT * FROM skills ORDER BY name');
   res.json(result.rows);
 });
 
-// POST add a new skill to the master list (idempotent)
+// Add a skill. If it already exists, just update the category.
 router.post('/', auth, async (req, res) => {
   const { name, category } = req.body;
   if (!name) return res.status(400).json({ error: 'Skill name required' });
@@ -23,9 +23,9 @@ router.post('/', auth, async (req, res) => {
   res.status(201).json(result.rows[0]);
 });
 
-// POST tag the logged-in user as teach/learn for a skill
+// Mark a skill as something you can teach or want to learn
 router.post('/tag', auth, async (req, res) => {
-  const { skillId, type, proficiency } = req.body; // type = 'teach' | 'learn'
+  const { skillId, type, proficiency } = req.body; // teach or learn
   if (!['teach', 'learn'].includes(type)) {
     return res.status(400).json({ error: "type must be 'teach' or 'learn'" });
   }
@@ -40,7 +40,7 @@ router.post('/tag', auth, async (req, res) => {
   res.status(201).json(result.rows[0]);
 });
 
-// POST set weekly availability slot (only relevant for teachers)
+// Save a weekly time slot when this user can teach
 router.post('/availability', auth, async (req, res) => {
   const { dayOfWeek, startTime, endTime } = req.body;
   const result = await pool.query(

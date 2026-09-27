@@ -1,11 +1,7 @@
 const admin = require('../config/firebase');
 const pool = require('../config/db');
 
-/**
- * Verifies the Firebase ID token sent in the Authorization header
- * (Bearer <token>), then loads/creates the matching PostgreSQL user row
- * and attaches it to req.user.
- */
+// Checks the login token, then loads the user (or creates them on first login)
 async function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization || '';
@@ -18,7 +14,7 @@ async function authMiddleware(req, res, next) {
     const decoded = await admin.auth().verifyIdToken(token);
     const { uid, email, name, picture } = decoded;
 
-    // Find existing user, or auto-create on first login
+    // First time signing in? Make a user row for them.
     let result = await pool.query('SELECT * FROM users WHERE firebase_uid = $1', [uid]);
 
     if (result.rows.length === 0) {

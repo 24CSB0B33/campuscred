@@ -1,11 +1,7 @@
 const pool = require('../config/db');
 const admin = require('../config/firebase');
 
-/**
- * Wires up real-time chat, one room per session (sessionId).
- * Client connects with the Firebase ID token, joins a session room,
- * and messages are persisted to Postgres + broadcast to the room.
- */
+// Live chat for a booked session. Messages are saved and sent to everyone in that session.
 function initChat(io) {
   io.use(async (socket, next) => {
     try {
@@ -40,7 +36,7 @@ function initChat(io) {
     });
 
     socket.on('disconnect', () => {
-      // no-op — rooms auto-clean on disconnect
+      // Socket.io already leaves rooms when someone disconnects
     });
   });
 }

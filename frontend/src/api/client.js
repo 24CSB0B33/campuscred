@@ -5,7 +5,7 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
 });
 
-// Attach the current Firebase ID token to every outgoing request
+// Send the login token with every API call
 api.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
   if (user) {

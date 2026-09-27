@@ -1,6 +1,4 @@
--- ============================================
--- CampusCred Database Schema (PostgreSQL)
--- ============================================
+-- CampusCred tables
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -9,7 +7,7 @@ CREATE TABLE users (
     email VARCHAR(150) UNIQUE NOT NULL,
     bio TEXT,
     avatar_url TEXT,
-    credits INTEGER DEFAULT 5,          -- new users start with 5 free credits
+    credits INTEGER DEFAULT 5,          -- everyone starts with 5 credits
     rating_avg NUMERIC(3,2) DEFAULT 0,
     rating_count INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW()
@@ -21,7 +19,7 @@ CREATE TABLE skills (
     category VARCHAR(60)
 );
 
--- A user can list a skill they TEACH or want to LEARN
+-- Skills a user can teach or wants to learn
 CREATE TABLE user_skills (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -31,11 +29,11 @@ CREATE TABLE user_skills (
     UNIQUE(user_id, skill_id, type)
 );
 
--- Weekly recurring availability slots for teaching
+-- Recurring weekly times when someone can teach
 CREATE TABLE user_availability (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    day_of_week SMALLINT CHECK (day_of_week BETWEEN 0 AND 6), -- 0=Sun
+    day_of_week SMALLINT CHECK (day_of_week BETWEEN 0 AND 6), -- 0 is Sunday
     start_time TIME NOT NULL,
     end_time TIME NOT NULL
 );
@@ -56,7 +54,7 @@ CREATE TABLE transactions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     session_id INTEGER REFERENCES sessions(id),
-    amount INTEGER NOT NULL,             -- positive = credit, negative = debit
+    amount INTEGER NOT NULL,             -- plus means credits in, minus means credits out
     type VARCHAR(10) CHECK (type IN ('credit','debit')) NOT NULL,
     note VARCHAR(200),
     created_at TIMESTAMP DEFAULT NOW()
@@ -80,7 +78,7 @@ CREATE TABLE messages (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Helpful indexes
+-- Speeds up common lookups
 CREATE INDEX idx_user_skills_skill ON user_skills(skill_id);
 CREATE INDEX idx_sessions_teacher ON sessions(teacher_id);
 CREATE INDEX idx_sessions_learner ON sessions(learner_id);

@@ -3,12 +3,12 @@ const router = express.Router();
 const pool = require('../config/db');
 const auth = require('../middleware/authMiddleware');
 
-// GET /api/users/me - current logged-in user's profile (auto-created by authMiddleware)
+// The signed-in user's profile
 router.get('/me', auth, async (req, res) => {
   res.json(req.user);
 });
 
-// PUT /api/users/me - update bio/name
+// Update name or bio
 router.put('/me', auth, async (req, res) => {
   const { name, bio } = req.body;
   const result = await pool.query(
@@ -18,7 +18,7 @@ router.put('/me', auth, async (req, res) => {
   res.json(result.rows[0]);
 });
 
-// GET /api/users/me/transactions - credit history
+// Credit history for this user
 router.get('/me/transactions', auth, async (req, res) => {
   const result = await pool.query(
     `SELECT * FROM transactions WHERE user_id = $1 ORDER BY created_at DESC`,

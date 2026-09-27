@@ -6,7 +6,7 @@ export default function FindMatch({ onSessionBooked }) {
   const [skills, setSkills] = useState([]);
   const [skillId, setSkillId] = useState('');
   
-  // Search parameters for availability matching
+  // Day and time the learner wants to meet
   const [searchDay, setSearchDay] = useState('');
   const [searchStart, setSearchStart] = useState('');
   const [searchEnd, setSearchEnd] = useState('');
@@ -14,7 +14,7 @@ export default function FindMatch({ onSessionBooked }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Booking Modal State
+  // Booking popup
   const [bookingTeacher, setBookingTeacher] = useState(null);
   const [bookingDate, setBookingDate] = useState('');
   const [bookingTime, setBookingTime] = useState('12:00');
@@ -47,7 +47,7 @@ export default function FindMatch({ onSessionBooked }) {
 
   const handleOpenBooking = (teacher) => {
     setBookingTeacher(teacher);
-    // Initialize booking date to tomorrow
+    // Default the date to tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     setBookingDate(tomorrow.toISOString().split('T')[0]);
@@ -78,7 +78,7 @@ export default function FindMatch({ onSessionBooked }) {
       handleCloseBooking();
       if (onSessionBooked) onSessionBooked();
       
-      // Refresh matches list (load scores might change)
+      // Search again so busy teachers move around in the list
       search();
     } catch (err) {
       console.error(err);

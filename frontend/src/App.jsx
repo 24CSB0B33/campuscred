@@ -29,7 +29,7 @@ export default function App() {
   const [sessions, setSessions] = useState([]);
   const [activeChatSession, setActiveChatSession] = useState(null);
   
-  // Skills/availability inputs
+  // Form fields for skills and free time
   const [allSkills, setAllSkills] = useState([]);
   const [newSkillName, setNewSkillName] = useState('');
   const [newSkillCategory, setNewSkillCategory] = useState('');

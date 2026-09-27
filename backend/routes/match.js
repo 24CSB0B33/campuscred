@@ -3,7 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const { findMatches } = require('../services/matching');
 
-// GET /api/match?skillId=3&day=2&start=14:00&end=16:00
+// Find teachers for a skill, optionally around a day and time
 router.get('/', auth, async (req, res) => {
   try {
     const { skillId, day, start, end } = req.query;

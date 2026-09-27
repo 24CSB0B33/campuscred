@@ -23,7 +23,7 @@ const pool = new Pool(config);
 async function checkDatabase() {
   console.log('Attempting to connect to PostgreSQL with config:');
   if (connectionString) {
-    console.log(`Connection URL: ${connectionString.replace(/:[^:@]+@/, ':***@')}`); // Hide password
+    console.log(`Connection URL: ${connectionString.replace(/:[^:@]+@/, ':***@')}`); // don't print the password
   } else {
     console.log(`Host: ${config.host}`);
     console.log(`Port: ${config.port}`);
@@ -35,7 +35,7 @@ async function checkDatabase() {
     const client = await pool.connect();
     console.log('\n✅ Successfully connected to PostgreSQL server!');
     
-    // Check if tables exist
+    // See which tables are already there
     const tablesQuery = `
       SELECT table_name 
       FROM information_schema.tables 

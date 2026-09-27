@@ -3,8 +3,7 @@ const router = express.Router();
 const pool = require('../config/db');
 const auth = require('../middleware/authMiddleware');
 
-// POST /api/sessions - learner books a session with a teacher
-// Credits are deducted immediately (escrow) and only paid to the teacher on completion.
+// Book a session. Credits come off the learner now and go to the teacher later, once it's done.
 router.post('/', auth, async (req, res) => {
   const client = await pool.connect();
   try {
@@ -20,7 +19,7 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ error: 'Not enough credits' });
     }
 
-    // Deduct from learner (held in escrow until session completes)
+    // Hold the credits until the session is finished
     await client.query('UPDATE users SET credits = credits - $1 WHERE id = $2', [cost, learnerId]);
 
     const sessionRes = await client.query(
@@ -47,11 +46,11 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// PUT /api/sessions/:id/status - confirm / complete / cancel
+// Confirm, finish, or cancel a session
 router.put('/:id/status', auth, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { status } = req.body; // 'confirmed' | 'completed' | 'cancelled'
+    const { status } = req.body; // confirmed, completed, or cancelled
     const sessionId = req.params.id;
 
     await client.query('BEGIN');
@@ -65,7 +64,7 @@ router.put('/:id/status', auth, async (req, res) => {
     await client.query('UPDATE sessions SET status = $1 WHERE id = $2', [status, sessionId]);
 
     if (status === 'completed') {
-      // Release escrowed credits to the teacher
+      // Session is done — pay the teacher
       await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [
         session.credits_cost,
         session.teacher_id,
@@ -78,7 +77,7 @@ router.put('/:id/status', auth, async (req, res) => {
     }
 
     if (status === 'cancelled') {
-      // Refund the learner
+      // Session was cancelled — give the credits back
       await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [
         session.credits_cost,
         session.learner_id,
@@ -101,7 +100,7 @@ router.put('/:id/status', auth, async (req, res) => {
   }
 });
 
-// GET /api/sessions/mine - all sessions (as teacher or learner) for logged-in user
+// All of this user's sessions, whether they are teaching or learning
 router.get('/mine', auth, async (req, res) => {
   const result = await pool.query(
     `SELECT s.*, sk.name as skill_name,

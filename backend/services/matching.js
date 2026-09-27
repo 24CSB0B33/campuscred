@@ -1,21 +1,9 @@
 const pool = require('../config/db');
 
-/**
- * Custom weighted matching algorithm.
- *
- * Given a learner and a skill they want to learn, this scores every
- * candidate teacher of that skill using three signals:
- *
- *   1. Rating score   (40%) - teacher's average rating, normalized 0-1
- *   2. Availability    (35%) - overlap between teacher's weekly slots
- *                              and the learner's requested day/time window
- *   3. Experience/load (25%) - fewer pending sessions = more available
- *                              bandwidth right now (inverse load score)
- *
- * Returns candidates sorted by score, highest first.
- */
+// Finds teachers for a skill and ranks them. Rating counts most, then whether
+// their free time matches, then how busy they already are.
 async function findMatches({ learnerId, skillId, preferredDay, preferredStart, preferredEnd }) {
-  // 1. Get all teachers who teach this skill (excluding the learner themself)
+  // Teachers of this skill, not including the person searching
   const teachersRes = await pool.query(
     `SELECT u.id, u.name, u.rating_avg, u.rating_count, u.credits
      FROM user_skills us
@@ -29,13 +17,13 @@ async function findMatches({ learnerId, skillId, preferredDay, preferredStart, p
 
   const teacherIds = teachers.map((t) => t.id);
 
-  // 2. Get availability slots for all candidate teachers in one query
+  // When each teacher is free
   const availRes = await pool.query(
     `SELECT * FROM user_availability WHERE user_id = ANY($1::int[])`,
     [teacherIds]
   );
 
-  // 3. Get each teacher's current pending/confirmed session load
+  // How many sessions each teacher already has lined up
   const loadRes = await pool.query(
     `SELECT teacher_id, COUNT(*) as active_sessions
      FROM sessions
@@ -48,12 +36,12 @@ async function findMatches({ learnerId, skillId, preferredDay, preferredStart, p
   const maxLoad = Math.max(1, ...Object.values(loadMap), 1);
 
   const scored = teachers.map((teacher) => {
-    // --- Rating score (0-1) ---
-    const ratingScore = teacher.rating_count > 0 ? teacher.rating_avg / 5 : 0.5; // neutral default for new teachers
+    // New teachers get a middle rating so they aren't stuck at the bottom
+    const ratingScore = teacher.rating_count > 0 ? teacher.rating_avg / 5 : 0.5;
 
-    // --- Availability score (0-1) ---
     const slots = availRes.rows.filter((s) => s.user_id === teacher.id);
-    let availabilityScore = 0.3; // baseline if learner gave no time preference
+    // If the learner didn't pick a time, give a small default score
+    let availabilityScore = 0.3;
     if (preferredDay !== undefined && preferredStart && preferredEnd) {
       const overlapping = slots.some(
         (s) =>
@@ -64,7 +52,7 @@ async function findMatches({ learnerId, skillId, preferredDay, preferredStart, p
       availabilityScore = overlapping ? 1 : slots.length > 0 ? 0.2 : 0;
     }
 
-    // --- Load score (0-1), inverse of how busy they currently are ---
+    // Busier teachers score a bit lower so bookings spread out
     const currentLoad = loadMap[teacher.id] || 0;
     const loadScore = 1 - currentLoad / maxLoad;
 

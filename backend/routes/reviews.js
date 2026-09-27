@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require('../config/db');
 const auth = require('../middleware/authMiddleware');
 
-// POST /api/reviews - leave a review after a completed session
+// Leave a review after a session is done
 router.post('/', auth, async (req, res) => {
   const client = await pool.connect();
   try {
@@ -17,7 +17,7 @@ router.post('/', auth, async (req, res) => {
       [sessionId, req.user.id, revieweeId, rating, comment || null]
     );
 
-    // Recalculate the reviewee's rolling average rating
+    // Update their average rating with this new review
     const agg = await client.query(
       `SELECT AVG(rating)::numeric(3,2) as avg, COUNT(*) as count
        FROM reviews WHERE reviewee_id = $1`,

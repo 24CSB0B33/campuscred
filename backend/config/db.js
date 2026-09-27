@@ -1,4 +1,4 @@
-// PostgreSQL connection pool
+// Shared database connection
 const { Pool } = require('pg');
 require('dotenv').config();
 

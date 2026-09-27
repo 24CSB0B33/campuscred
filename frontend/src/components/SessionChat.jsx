@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { auth } from '../config/firebase';
 
-// Real-time chat scoped to a single booked session
+// Chat for one booked session
 export default function SessionChat({ sessionId }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');

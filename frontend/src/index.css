@@ -8,7 +8,7 @@
   }
 }
 
-/* Custom premium scrollbar styling */
+/* Thin scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -27,7 +27,7 @@
   background: rgba(139, 92, 246, 0.6);
 }
 
-/* Card glassmorphism background style */
+/* Frosted card background */
 .glass-panel {
   background: rgba(30, 41, 59, 0.4);
   backdrop-filter: blur(12px);

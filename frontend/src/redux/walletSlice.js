@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../api/client';
 
-// Fetch the logged-in user's profile (includes credit balance)
+// Load the user's profile, including how many credits they have
 export const fetchProfile = createAsyncThunk('wallet/fetchProfile', async () => {
   const res = await api.get('/users/me');
   return res.data;
@@ -20,8 +20,7 @@ const walletSlice = createSlice({
     status: 'idle',
   },
   reducers: {
-    // Optimistic local update after booking/completing a session,
-    // reconciled by the next fetchProfile call
+    // Update credits on screen right away; the next profile fetch will confirm it
     adjustCreditsLocally: (state, action) => {
       if (state.profile) state.profile.credits += action.payload;
     },
